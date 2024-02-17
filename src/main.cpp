@@ -4,22 +4,27 @@
 #include <addons/TokenHelper.h>
 #include <addons/RTDBHelper.h>
 
-#define WIFISSID "34wifi" //wifi SSID
-#define WIFIPASSWD "12341234" //wifi Passowrd
+//----------------------------[Config]------------------------------------
+
+#define WIFISSID "B10cky" //wifi SSID
+#define WIFIPASSWD "123456789" //wifi Passowrd
 #define API_KEY "AIzaSyDSYJCBhEkr6lyluw1QH9-LG29-IReoT8Y "
 #define DATABASE_URL "https://wlas-51abf-default-rtdb.asia-southeast1.firebasedatabase.app/" 
 #define USER_EMAIL "blocky34@blocky34.tech"
 #define USER_PASSWORD "blockytech"
-#define WriteRate 120000 //write to firebase every 120 seconds(two minutes)
+#define WriteRate 5000 //write to firebase every 5 seconds(two minutes)
 #define BtnPin 32 //button that connects to our device
-#define RelayPin 32 //relay that controls the Led output
+#define RelayPin 17 //relay that controls the Led output
 #define trigPin 22 // (RX) Pin to send trigger pulse
 #define echoPin 23 // (TX) Pin to receive echo pulse
+
+//------------------------------------------------------------------------
 
 long duration;
 int distance;
 int pressed = 1;
 bool aleart = false;
+long lastUpload = -120000;
 
 FirebaseData fbdo;
 FirebaseAuth auth;
@@ -36,6 +41,7 @@ void setup()
     pinMode(RelayPin,OUTPUT); //繼電器
     pinMode(trigPin, OUTPUT);
     pinMode(echoPin, INPUT);
+    Serial.begin(9600);
     connectWIFI();
     Serial.printf("Firebase Client v%s\n\n", FIREBASE_CLIENT_VERSION);
     initFirebase();
@@ -46,27 +52,31 @@ void loop()
 {
 
   pressed = digitalRead(32); //讀取按鈕現在的狀態
+  //Serial.print(pressed);
   if(pressed == 0)
   {
-    Serial.println("按鈕被觸發了");
+    //Serial.println("按鈕被觸發了");
+    //distance = random(0, 100); //debug
     digitalWrite(17, HIGH);   //啟動繼電器
     aleart = true; 
-    
+    //Serial.printf("triggered");
   }
   else
   {
     aleart = false;  
     digitalWrite(17, LOW); //關閉繼電器
-    measure();
-    
+    //measure();
+    distance = random(0, 100); //debug
+    //Serial.printf("triggered");
   }
 
 
   //every 2 minutes send data to firebase
-  if(millis() % WriteRate == 0)
+  if(millis() -lastUpload >= WriteRate)
   {
     Serial.println("sending data to firebase");
     sendFirebase();
+    lastUpload = millis();
   }
 }
 
@@ -98,7 +108,7 @@ void connectWIFI()
     time += 500;
     Serial.print(".");
 
-    if(time >= 10000)
+    if(time >= 60000)
     {
       Serial.println("WIFI Time out");
       return;
@@ -128,6 +138,9 @@ void initFirebase()
 
 void sendFirebase()
 {
+
   Serial.printf("Set bool... %s\n", Firebase.RTDB.setBool(&fbdo, F("/isAleart"), aleart) ? "ok" : fbdo.errorReason().c_str());
-  Serial.printf("Set int... %s\n", Firebase.RTDB.setInt(&fbdo, F("/WaterLevel"), distance) ? "ok" : fbdo.errorReason().c_str());
+  //Serial.printf("Set int... %s\n", Firebase.RTDB.setInt(&fbdo, F("/WaterLevel"), distance) ? "ok" : fbdo.errorReason().c_str());
+
+  
 }
