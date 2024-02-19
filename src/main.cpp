@@ -13,7 +13,7 @@
 #define USER_EMAIL "blocky34@blocky34.tech"
 #define USER_PASSWORD "blockytech"
 #define WriteRate 5000 //write to firebase every 5 seconds(two minutes)
-#define BtnPin 32 //button that connects to our device
+#define BtnPin 16 //button that connects to our device
 #define RelayPin 17 //relay that controls the Led output
 #define trigPin 22 // (RX) Pin to send trigger pulse
 #define echoPin 23 // (TX) Pin to receive echo pulse
@@ -51,23 +51,32 @@ void setup()
 void loop() 
 {
 
-  pressed = digitalRead(32); //讀取按鈕現在的狀態
+  pressed = digitalRead(BtnPin); //讀取按鈕現在的狀態
   //Serial.print(pressed);
   if(pressed == 0)
   {
-    //Serial.println("按鈕被觸發了");
+    Serial.println("按鈕被觸發了");
     //distance = random(0, 100); //debug
-    digitalWrite(17, HIGH);   //啟動繼電器
+    //digitalWrite(17, HIGH);   //啟動繼電器
     aleart = true; 
     //Serial.printf("triggered");
   }
   else
   {
-    aleart = false;  
-    digitalWrite(17, LOW); //關閉繼電器
+    //aleart = false;  
+    //digitalWrite(17, LOW); //關閉繼電器
     //measure();
-    distance = random(0, 100); //debug
+    //distance = random(0, 100); //debug
     //Serial.printf("triggered");
+  }
+
+  if(aleart)
+  {
+    digitalWrite(17, HIGH);   //啟動繼電器
+  }
+  else
+  {
+    digitalWrite(17, LOW); //關閉繼電器
   }
 
 
@@ -77,6 +86,7 @@ void loop()
     Serial.println("sending data to firebase");
     sendFirebase();
     lastUpload = millis();
+    aleart = false;
   }
 }
 
